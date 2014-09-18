@@ -3,12 +3,10 @@
 var EPSILON = 1e-5, COPLANAR = 0, FRONT = 1, BACK = 2, SPANNING = 3;
 
 var ThreeBSP = (function () {
-    function ThreeBSP(geometry) {
-        // Convert THREE.Geometry to ThreeBSP
-        var i, _length_i, face, vertex, faceVertexUvs, uvs, polygon, polygons = [], tree;
-
+    function ThreeBSP(geometry, matrix) {
+        // Convert THREE.Geometry to ThreeBSP)
         if (geometry instanceof THREE.Geometry) {
-            this.matrix = new THREE.Matrix4;
+            this.matrix = matrix || new THREE.Matrix4();
         } else if (geometry instanceof THREE.Mesh) {
             // #todo: add hierarchy support
             geometry.updateMatrix();
@@ -16,11 +14,14 @@ var ThreeBSP = (function () {
             geometry = geometry.geometry;
         } else if (geometry instanceof ThreeBSP.BSPNode) {
             this.tree = geometry;
-            this.matrix = new THREE.Matrix4;
+            this.matrix = matrix || new THREE.Matrix4();
             return this;
         } else {
             throw 'ThreeBSP: Given geometry is unsupported';
         }
+
+        // Convert THREE.Geometry to ThreeBSP
+        var i, _length_i, face, vertex, faceVertexUvs, uvs, polygon, polygons = [];
 
         for (i = 0, _length_i = geometry.faces.length; i < _length_i; i++) {
             face = geometry.faces[i];
@@ -52,7 +53,6 @@ var ThreeBSP = (function () {
             polygon.calculateProperties();
             polygons.push(polygon);
         }
-        ;
 
         this.tree = new ThreeBSP.BSPNode(polygons);
     }
@@ -100,6 +100,7 @@ var ThreeBSP = (function () {
         a.matrix = this.matrix;
         return a;
     };
+
     ThreeBSP.prototype.toGeometry = function () {
         var i, j, matrix = new THREE.Matrix4().getInverse(this.matrix), geometry = new THREE.Geometry(), polygons = this.tree.allPolygons(), polygon_count = polygons.length, polygon, polygon_vertice_count, vertice_dict = {}, vertex_idx_a, vertex_idx_b, vertex_idx_c, vertex, face, verticeUvs;
 
@@ -152,6 +153,7 @@ var ThreeBSP = (function () {
         }
         return geometry;
     };
+
     ThreeBSP.prototype.toMesh = function (material) {
         var geometry = this.toGeometry(), mesh = new THREE.Mesh(geometry, material);
 
@@ -167,19 +169,12 @@ var ThreeBSP;
 (function (ThreeBSP) {
     var Polygon = (function () {
         function Polygon(vertices, normal, w) {
+            if (typeof vertices === "undefined") { vertices = []; }
             this.vertices = vertices;
             this.normal = normal;
             this.w = w;
-            if (!(vertices instanceof Array)) {
-                vertices = [];
-            }
-
-            this.vertices = vertices;
-            if (vertices.length > 0) {
+            if (vertices.length)
                 this.calculateProperties();
-            } else {
-                this.normal = this.w = undefined;
-            }
         }
         Polygon.prototype.calculateProperties = function () {
             var a = this.vertices[0], b = this.vertices[1], c = this.vertices[2];
@@ -190,17 +185,19 @@ var ThreeBSP;
 
             return this;
         };
+
         Polygon.prototype.clone = function () {
             var i, vertice_count, polygon = new Polygon();
 
             for (i = 0, vertice_count = this.vertices.length; i < vertice_count; i++) {
                 polygon.vertices.push(this.vertices[i].clone());
             }
-            ;
+
             polygon.calculateProperties();
 
             return polygon;
         };
+
         Polygon.prototype.flip = function () {
             var i, vertices = [];
 
@@ -210,11 +207,12 @@ var ThreeBSP;
             for (i = this.vertices.length - 1; i >= 0; i--) {
                 vertices.push(this.vertices[i]);
             }
-            ;
+
             this.vertices = vertices;
 
             return this;
         };
+
         Polygon.prototype.classifyVertex = function (vertex) {
             var side_value = this.normal.dot(vertex) - this.w;
 
@@ -226,6 +224,7 @@ var ThreeBSP;
                 return COPLANAR;
             }
         };
+
         Polygon.prototype.classifySide = function (polygon) {
             var i, vertex, classification, num_positive = 0, num_negative = 0, vertice_count = polygon.vertices.length;
 
@@ -293,33 +292,39 @@ var ThreeBSP;
 
     var Vertex = (function () {
         function Vertex(x, y, z, normal, uv) {
+            if (typeof normal === "undefined") { normal = new THREE.Vector3(); }
+            if (typeof uv === "undefined") { uv = new THREE.Vector2(); }
             this.x = x;
             this.y = y;
             this.z = z;
-            this.normal = normal || new THREE.Vector3;
-            this.uv = uv || new THREE.Vector2;
+            this.normal = normal;
+            this.uv = uv;
         }
         Vertex.prototype.clone = function () {
             return new ThreeBSP.Vertex(this.x, this.y, this.z, this.normal.clone(), this.uv.clone());
         };
+
         Vertex.prototype.add = function (vertex) {
             this.x += vertex.x;
             this.y += vertex.y;
             this.z += vertex.z;
             return this;
         };
+
         Vertex.prototype.subtract = function (vertex) {
             this.x -= vertex.x;
             this.y -= vertex.y;
             this.z -= vertex.z;
             return this;
         };
+
         Vertex.prototype.multiplyScalar = function (scalar) {
             this.x *= scalar;
             this.y *= scalar;
             this.z *= scalar;
             return this;
         };
+
         Vertex.prototype.cross = function (vertex) {
             var x = this.x, y = this.y, z = this.z;
 
@@ -329,6 +334,7 @@ var ThreeBSP;
 
             return this;
         };
+
         Vertex.prototype.normalize = function () {
             var length = Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
 
@@ -338,9 +344,11 @@ var ThreeBSP;
 
             return this;
         };
+
         Vertex.prototype.dot = function (vertex) {
             return this.x * vertex.x + this.y * vertex.y + this.z * vertex.z;
         };
+
         Vertex.prototype.lerp = function (a, t) {
             this.add(a.clone().subtract(this).multiplyScalar(t));
 
@@ -350,9 +358,11 @@ var ThreeBSP;
 
             return this;
         };
+
         Vertex.prototype.interpolate = function (other, t) {
             return this.clone().lerp(other, t);
         };
+
         Vertex.prototype.applyMatrix4 = function (m) {
             // input: THREE.Matrix4 affine matrix
             var x = this.x, y = this.y, z = this.z;
@@ -393,6 +403,18 @@ var ThreeBSP;
                 this.back = new BSPNode(back);
             }
         }
+        BSPNode.isConvex = function (polygons) {
+            var i, j;
+            for (i = 0; i < polygons.length; i++) {
+                for (j = 0; j < polygons.length; j++) {
+                    if (i !== j && polygons[i].classifySide(polygons[j]) !== BACK) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        };
+
         BSPNode.prototype.build = function (polygons) {
             var i, polygon_count, front = [], back = [];
 
@@ -465,7 +487,8 @@ var ThreeBSP;
             if (!this.divider)
                 return polygons.slice();
 
-            front = [], back = [];
+            front = [];
+            back = [];
 
             for (i = 0, polygon_count = polygons.length; i < polygon_count; i++) {
                 this.divider.splitPolygon(polygons[i], front, back, front, back);
@@ -487,17 +510,6 @@ var ThreeBSP;
                 this.front.clipTo(node);
             if (this.back)
                 this.back.clipTo(node);
-        };
-        BSPNode.isConvex = function (polygons) {
-            var i, j;
-            for (i = 0; i < polygons.length; i++) {
-                for (j = 0; j < polygons.length; j++) {
-                    if (i !== j && polygons[i].classifySide(polygons[j]) !== BACK) {
-                        return false;
-                    }
-                }
-            }
-            return true;
         };
         return BSPNode;
     })();

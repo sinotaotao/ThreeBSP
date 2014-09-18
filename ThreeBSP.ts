@@ -13,33 +13,40 @@ class ThreeBSP
 	matrix: THREE.Matrix4;
 	tree: ThreeBSP.BSPNode;
 
-	constructor(geometry)
+	constructor(geometry:THREE.Mesh);
+	constructor(geometry:THREE.Geometry, matrix?:THREE.Matrix4);
+	constructor(geometry:ThreeBSP.BSPNode, matrix?:THREE.Matrix4);
+	constructor(geometry:any, matrix?:THREE.Matrix4)
 	{
-		// Convert THREE.Geometry to ThreeBSP
-		var i, _length_i,
-			face, vertex, faceVertexUvs, uvs,
-			polygon,
-			polygons = [],
-			tree;
 
-		if (geometry instanceof THREE.Geometry)
+		// Convert THREE.Geometry to ThreeBSP)
+		if(geometry instanceof THREE.Geometry)
 		{
-			this.matrix = new THREE.Matrix4;
-		} else if (geometry instanceof THREE.Mesh)
+			this.matrix = matrix || new THREE.Matrix4();
+		}
+		else if(geometry instanceof THREE.Mesh)
 		{
 			// #todo: add hierarchy support
 			geometry.updateMatrix();
 			this.matrix = geometry.matrix.clone();
 			geometry = geometry.geometry;
-		} else if (geometry instanceof ThreeBSP.BSPNode)
+		}
+		else if(geometry instanceof ThreeBSP.BSPNode)
 		{
 			this.tree = geometry;
-			this.matrix = new THREE.Matrix4;
+			this.matrix = matrix || new THREE.Matrix4();
 			return this;
 		} else
 		{
 			throw 'ThreeBSP: Given geometry is unsupported';
 		}
+
+
+		// Convert THREE.Geometry to ThreeBSP
+		var i, _length_i,
+			face, vertex, faceVertexUvs, uvs,
+			polygon,
+			polygons = [];
 
 		for (i = 0, _length_i = geometry.faces.length; i < _length_i; i++)
 		{
@@ -73,12 +80,12 @@ class ThreeBSP
 
 			polygon.calculateProperties();
 			polygons.push(polygon);
-		};
+		}
 
 		this.tree = new ThreeBSP.BSPNode(polygons);
 	}
 
-	subtract(other_tree)
+	subtract(other_tree:ThreeBSP):ThreeBSP
 	{
 		var a:any = this.tree.clone(),
 			b = other_tree.tree.clone();
@@ -96,7 +103,7 @@ class ThreeBSP
 		return a;
 	}
 
-	union(other_tree)
+	union(other_tree:ThreeBSP):ThreeBSP
 	{
 		var a: any = this.tree.clone(),
 			b = other_tree.tree.clone();
@@ -112,7 +119,7 @@ class ThreeBSP
 		return a;
 	}
 
-	intersect(other_tree)
+	intersect(other_tree:ThreeBSP):ThreeBSP
 	{
 		var a: any = this.tree.clone(),
 			b = other_tree.tree.clone();
@@ -128,7 +135,8 @@ class ThreeBSP
 		a.matrix = this.matrix;
 		return a;
 	}
-	toGeometry()
+
+	toGeometry():THREE.Geometry
 	{
 		var i, j,
 			matrix = new THREE.Matrix4().getInverse(this.matrix),
@@ -204,7 +212,8 @@ class ThreeBSP
 		}
 		return geometry;
 	}
-	toMesh(material)
+
+	toMesh(material:THREE.Material):THREE.Mesh
 	{
 		var geometry = this.toGeometry(),
 			mesh = new THREE.Mesh(geometry, material);
@@ -223,24 +232,16 @@ module ThreeBSP
 	export class Polygon
 	{
 
-		constructor(public vertices?, public normal?, public w?)
+		constructor(
+			public vertices:Vertex[] = [],
+			public normal?:Vertex,
+			public w?:number)
 		{
-			if (!(vertices instanceof Array))
-			{
-				vertices = [];
-			}
-
-			this.vertices = vertices;
-			if (vertices.length > 0)
-			{
+			if (vertices.length)
 				this.calculateProperties();
-			} else
-			{
-				this.normal = this.w = undefined;
-			}
 		}
 
-		calculateProperties()
+		calculateProperties():Polygon
 		{
 			var a = this.vertices[0],
 				b = this.vertices[1],
@@ -254,7 +255,8 @@ module ThreeBSP
 
 			return this;
 		}
-		clone()
+
+		clone():Polygon
 		{
 			var i, vertice_count,
 				polygon = new Polygon();
@@ -262,12 +264,14 @@ module ThreeBSP
 			for (i = 0, vertice_count = this.vertices.length; i < vertice_count; i++)
 			{
 				polygon.vertices.push(this.vertices[i].clone());
-			};
+			}
+
 			polygon.calculateProperties();
 
 			return polygon;
 		}
-		flip()
+
+		flip():Polygon
 		{
 			var i, vertices = [];
 
@@ -277,12 +281,14 @@ module ThreeBSP
 			for (i = this.vertices.length - 1; i >= 0; i--)
 			{
 				vertices.push(this.vertices[i]);
-			};
+			}
+
 			this.vertices = vertices;
 
 			return this;
 		}
-		classifyVertex(vertex)
+
+		classifyVertex(vertex:Vertex):number
 		{
 			var side_value = this.normal.dot(vertex) - this.w;
 
@@ -297,7 +303,8 @@ module ThreeBSP
 				return COPLANAR;
 			}
 		}
-		classifySide(polygon)
+
+		classifySide(polygon:Polygon):number
 		{
 			var i, vertex, classification,
 				num_positive = 0,
@@ -332,7 +339,12 @@ module ThreeBSP
 			}
 		}
 
-		splitPolygon(polygon, coplanar_front, coplanar_back, front, back)
+		splitPolygon(
+			polygon:Polygon,
+			coplanar_front:Polygon[],
+			coplanar_back:Polygon[],
+			front:Polygon[],
+			back:Polygon[])
 		{
 			var classification = this.classifySide(polygon);
 
@@ -390,39 +402,47 @@ module ThreeBSP
 
 	export class Vertex
 	{
-		public normal;
-		public uv;
-		constructor(public x, public y, public z, normal, uv)
+
+		constructor(
+			public x:number,
+			public y:number,
+			public z:number,
+			public normal:THREE.Vector3 = new THREE.Vector3(),
+			public uv:THREE.Vector2 = new THREE.Vector2())
 		{
-			this.normal = normal || new THREE.Vector3;
-			this.uv = uv || new THREE.Vector2;
+
 		}
-		clone()
+
+		clone():Vertex
 		{
 			return new ThreeBSP.Vertex(this.x, this.y, this.z, this.normal.clone(), this.uv.clone());
 		}
-		add(vertex)
+
+		add(vertex):Vertex
 		{
 			this.x += vertex.x;
 			this.y += vertex.y;
 			this.z += vertex.z;
 			return this;
 		}
-		subtract(vertex)
+
+		subtract(vertex):Vertex
 		{
 			this.x -= vertex.x;
 			this.y -= vertex.y;
 			this.z -= vertex.z;
 			return this;
 		}
-		multiplyScalar(scalar)
+
+		multiplyScalar(scalar):Vertex
 		{
 			this.x *= scalar;
 			this.y *= scalar;
 			this.z *= scalar;
 			return this;
 		}
-		cross(vertex)
+
+		cross(vertex):Vertex
 		{
 			var x = this.x,
 				y = this.y,
@@ -434,7 +454,8 @@ module ThreeBSP
 
 			return this;
 		}
-		normalize()
+
+		normalize():Vertex
 		{
 			var length = Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
 
@@ -444,11 +465,13 @@ module ThreeBSP
 
 			return this;
 		}
-		dot(vertex)
+
+		dot(vertex):number
 		{
 			return this.x * vertex.x + this.y * vertex.y + this.z * vertex.z;
 		}
-		lerp(a, t)
+
+		lerp(a:Vertex, t:number):Vertex
 		{
 			this.add(
 				a.clone().subtract(this).multiplyScalar(t)
@@ -464,11 +487,13 @@ module ThreeBSP
 
 			return this;
 		}
-		interpolate(other, t)
+
+		interpolate(other:Vertex, t:number):Vertex
 		{
 			return this.clone().lerp(other, t);
 		}
-		applyMatrix4(m)
+
+		applyMatrix4(m:THREE.Matrix4):Vertex
 		{
 
 			// input: THREE.Matrix4 affine matrix
@@ -524,7 +549,7 @@ module ThreeBSP
 			}
 		}
 
-		static isConvex = function (polygons)
+		static isConvex(polygons:Polygon[]): boolean
 		{
 			var i, j;
 			for (i = 0; i < polygons.length; i++)
@@ -540,7 +565,7 @@ module ThreeBSP
 			return true;
 		}
 
-		build(polygons)
+		build(polygons:Polygon[]):void
 		{
 			var i, polygon_count,
 				front = [],
@@ -569,7 +594,7 @@ module ThreeBSP
 			}
 		}
 
-		allPolygons()
+		allPolygons():Polygon[]
 		{
 			var polygons = this.polygons.slice();
 			if (this.front) polygons = polygons.concat(this.front.allPolygons());
@@ -577,7 +602,7 @@ module ThreeBSP
 			return polygons;
 		}
 
-		clone()
+		clone():BSPNode
 		{
 			var node = new BSPNode();
 
@@ -589,7 +614,7 @@ module ThreeBSP
 			return node;
 		}
 
-		invert()
+		invert():BSPNode
 		{
 			var i, polygon_count, temp;
 
@@ -609,14 +634,15 @@ module ThreeBSP
 			return this;
 		}
 
-		clipPolygons(polygons)
+		clipPolygons(polygons):Polygon[]
 		{
 			var i, polygon_count,
 				front, back;
 
 			if (!this.divider) return polygons.slice();
 
-			front = [], back = [];
+			front = [];
+			back = [];
 
 			for (i = 0, polygon_count = polygons.length; i < polygon_count; i++)
 			{
@@ -630,7 +656,7 @@ module ThreeBSP
 			return front.concat(back);
 		}
 
-		clipTo(node)
+		clipTo(node):void
 		{
 			this.polygons = node.clipPolygons(this.polygons);
 			if (this.front) this.front.clipTo(node);
