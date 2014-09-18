@@ -1,6 +1,4 @@
-///<reference path="../../components/DefinitelyTyped/threejs/three.d.ts"/>
-///<amd-dependency path="THREE" />
-///<amd-dependency path="CSG" />
+///<reference path="three.d.ts"/>
 
 
 // Constants...
@@ -18,7 +16,6 @@ class ThreeBSP
 	public matrix:THREE.Matrix4;
 
 
-	constructor(geometry:THREE.Mesh);
 	constructor(geometry:THREE.Geometry, matrix?:THREE.Matrix4);
 	constructor(geometry:ThreeBSP.Node, matrix?:THREE.Matrix4);
 	constructor(geometry:any, matrix?:THREE.Matrix4)

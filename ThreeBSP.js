@@ -1,17 +1,21 @@
+///<reference path="three.d.ts"/>
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-define(["require", "exports", "THREE", "CSG"], function(require, exports) {
+define(["require", "exports"], function(require, exports) {
+    // Constants...
     var EPSILON = 1e-5, COPLANAR = 0, FRONT = 1, BACK = 2, SPANNING = 3;
 
     var ThreeBSP = (function () {
         function ThreeBSP(geometry, matrix) {
+            // Convert THREE.Geometry to ThreeBSP)
             if (geometry instanceof THREE.Geometry) {
                 this.matrix = matrix || new THREE.Matrix4();
             } else if (geometry instanceof THREE.Mesh) {
+                // #todo: add hierarchy support
                 geometry.updateMatrix();
                 this.matrix = geometry.matrix.clone();
                 geometry = geometry.geometry;
@@ -187,6 +191,7 @@ define(["require", "exports", "THREE", "CSG"], function(require, exports) {
         return ThreeBSP;
     })();
 
+    // Extend sub classes..
     var ThreeBSP;
     (function (ThreeBSP) {
         var Polygon = (function () {
@@ -475,4 +480,4 @@ define(["require", "exports", "THREE", "CSG"], function(require, exports) {
     
     return ThreeBSP;
 });
-//# sourceMappingURL=BSP.js.map
+//# sourceMappingURL=ThreeBSP.js.map
