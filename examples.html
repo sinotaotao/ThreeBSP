@@ -8,11 +8,11 @@
 	<script type="text/javascript" src="require.js"></script>
 	<script type="text/javascript" src="require.config.js"></script>
 	<script type="text/javascript" src="three.min.js"></script>
+	<script type="text/javascript" src="ThreeBSP.js"></script>
 
 	<script type="text/javascript">
 
 		window.onload = function () {
-			require(["ThreeBSP"], function (ThreeBSP) {
 
 				var renderer, scene, camera, light;
 
@@ -104,7 +104,6 @@
 					requestAnimationFrame(render);
 					renderer.render(scene, camera);
 				})();
-			});
 		}
 
 	</script>
