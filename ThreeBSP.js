@@ -1,5 +1,11 @@
 ///<reference path="three.d.ts" />
 'use strict';
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
 var EPSILON = 1e-5, COPLANAR = 0, FRONT = 1, BACK = 2, SPANNING = 3;
 
 var ThreeBSP = (function () {
@@ -179,7 +185,7 @@ var ThreeBSP;
         Polygon.prototype.calculateProperties = function () {
             var a = this.vertices[0], b = this.vertices[1], c = this.vertices[2];
 
-            this.normal = b.clone().subtract(a).cross(c.clone().subtract(a)).normalize();
+            this.normal = b.clone().sub(a).cross(c.clone().sub(a)).normalize();
 
             this.w = this.normal.clone().dot(a);
 
@@ -273,7 +279,7 @@ var ThreeBSP;
                     if (ti != FRONT)
                         b.push(vi);
                     if ((ti | tj) === SPANNING) {
-                        t = (this.w - this.normal.dot(vi)) / this.normal.dot(vj.clone().subtract(vi));
+                        t = (this.w - this.normal.dot(vi)) / this.normal.dot(vj.clone().sub(vi));
                         v = vi.interpolate(vj, t);
                         f.push(v);
                         b.push(v);
@@ -290,13 +296,12 @@ var ThreeBSP;
     })();
     ThreeBSP.Polygon = Polygon;
 
-    var Vertex = (function () {
+    var Vertex = (function (_super) {
+        __extends(Vertex, _super);
         function Vertex(x, y, z, normal, uv) {
             if (typeof normal === "undefined") { normal = new THREE.Vector3(); }
             if (typeof uv === "undefined") { uv = new THREE.Vector2(); }
-            this.x = x;
-            this.y = y;
-            this.z = z;
+            _super.call(this, x, y, z);
             this.normal = normal;
             this.uv = uv;
         }
@@ -304,79 +309,11 @@ var ThreeBSP;
             return new ThreeBSP.Vertex(this.x, this.y, this.z, this.normal.clone(), this.uv.clone());
         };
 
-        Vertex.prototype.add = function (vertex) {
-            this.x += vertex.x;
-            this.y += vertex.y;
-            this.z += vertex.z;
-            return this;
-        };
-
-        Vertex.prototype.subtract = function (vertex) {
-            this.x -= vertex.x;
-            this.y -= vertex.y;
-            this.z -= vertex.z;
-            return this;
-        };
-
-        Vertex.prototype.multiplyScalar = function (scalar) {
-            this.x *= scalar;
-            this.y *= scalar;
-            this.z *= scalar;
-            return this;
-        };
-
-        Vertex.prototype.cross = function (vertex) {
-            var x = this.x, y = this.y, z = this.z;
-
-            this.x = y * vertex.z - z * vertex.y;
-            this.y = z * vertex.x - x * vertex.z;
-            this.z = x * vertex.y - y * vertex.x;
-
-            return this;
-        };
-
-        Vertex.prototype.normalize = function () {
-            var length = Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
-
-            this.x /= length;
-            this.y /= length;
-            this.z /= length;
-
-            return this;
-        };
-
-        Vertex.prototype.dot = function (vertex) {
-            return this.x * vertex.x + this.y * vertex.y + this.z * vertex.z;
-        };
-
-        Vertex.prototype.lerp = function (a, t) {
-            this.add(a.clone().subtract(this).multiplyScalar(t));
-
-            this.normal.add(a.normal.clone().sub(this.normal).multiplyScalar(t));
-
-            this.uv.add(a.uv.clone().sub(this.uv).multiplyScalar(t));
-
-            return this;
-        };
-
         Vertex.prototype.interpolate = function (other, t) {
             return this.clone().lerp(other, t);
         };
-
-        Vertex.prototype.applyMatrix4 = function (m) {
-            // input: THREE.Matrix4 affine matrix
-            var x = this.x, y = this.y, z = this.z;
-
-            var e = m.elements;
-
-            this.x = e[0] * x + e[4] * y + e[8] * z + e[12];
-            this.y = e[1] * x + e[5] * y + e[9] * z + e[13];
-            this.z = e[2] * x + e[6] * y + e[10] * z + e[14];
-
-            return this;
-        };
         return Vertex;
-    })();
+    })(THREE.Vector3);
     ThreeBSP.Vertex = Vertex;
 
     var BSPNode = (function () {
