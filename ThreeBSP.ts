@@ -1,4 +1,6 @@
 ///<reference path="three.d.ts" />
+///<amd-dependency path="THREE" />
+
 'use strict';
 
 var
@@ -87,7 +89,7 @@ class ThreeBSP
 
 	subtract(other_tree:ThreeBSP):ThreeBSP
 	{
-		var a:any = this.tree.clone(),
+		var a = this.tree.clone(),
 			b = other_tree.tree.clone();
 
 		a.invert();
@@ -98,14 +100,12 @@ class ThreeBSP
 		b.invert();
 		a.build(b.allPolygons());
 		a.invert();
-		a = new ThreeBSP(a);
-		a.matrix = this.matrix;
-		return a;
+		return new ThreeBSP(a, this.matrix);
 	}
 
 	union(other_tree:ThreeBSP):ThreeBSP
 	{
-		var a: any = this.tree.clone(),
+		var a = this.tree.clone(),
 			b = other_tree.tree.clone();
 
 		a.clipTo(b);
@@ -114,14 +114,12 @@ class ThreeBSP
 		b.clipTo(a);
 		b.invert();
 		a.build(b.allPolygons());
-		a = new ThreeBSP(a);
-		a.matrix = this.matrix;
-		return a;
+		return new ThreeBSP(a, this.matrix);
 	}
 
 	intersect(other_tree:ThreeBSP):ThreeBSP
 	{
-		var a: any = this.tree.clone(),
+		var a = this.tree.clone(),
 			b = other_tree.tree.clone();
 
 		a.invert();
@@ -131,9 +129,7 @@ class ThreeBSP
 		b.clipTo(a);
 		a.build(b.allPolygons());
 		a.invert();
-		a = new ThreeBSP(a);
-		a.matrix = this.matrix;
-		return a;
+		return new ThreeBSP(a, this.matrix);
 	}
 
 	toGeometry():THREE.Geometry
@@ -579,3 +575,5 @@ module ThreeBSP
 
 	}
 }
+
+export = ThreeBSP;
