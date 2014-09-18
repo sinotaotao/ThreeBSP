@@ -1,0 +1,54 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0" is_locked="false">
+    <option name="myName" value="Project Default" />
+    <option name="myLocal" value="false" />
+    <inspection_tool class="CssUnknownProperty" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="myCustomPropertiesEnabled" value="true" />
+      <option name="myIgnoreVendorSpecificProperties" value="false" />
+      <option name="myCustomPropertiesList">
+        <value>
+          <list size="10">
+            <item index="0" class="java.lang.String" itemvalue="min-device-pixel-ratio" />
+            <item index="1" class="java.lang.String" itemvalue="transition" />
+            <item index="2" class="java.lang.String" itemvalue="tap-highlight-color" />
+            <item index="3" class="java.lang.String" itemvalue="filter" />
+            <item index="4" class="java.lang.String" itemvalue="text-fill-color" />
+            <item index="5" class="java.lang.String" itemvalue="pointer-events" />
+            <item index="6" class="java.lang.String" itemvalue="device-width" />
+            <item index="7" class="java.lang.String" itemvalue="stroke" />
+            <item index="8" class="java.lang.String" itemvalue="fill" />
+            <item index="9" class="java.lang.String" itemvalue="font-smoothing" />
+          </list>
+        </value>
+      </option>
+    </inspection_tool>
+    <inspection_tool class="HtmlFormInputWithoutLabel" enabled="false" level="WARNING" enabled_by_default="false" />
+    <inspection_tool class="HtmlUnknownAnchorTarget" enabled="false" level="WARNING" enabled_by_default="false" />
+    <inspection_tool class="HtmlUnknownAttribute" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="myValues">
+        <value>
+          <list size="1">
+            <item index="0" class="java.lang.String" itemvalue="data" />
+          </list>
+        </value>
+      </option>
+      <option name="myCustomValuesEnabled" value="true" />
+    </inspection_tool>
+    <inspection_tool class="JSUnfilteredForInLoop" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="mySkipPrimitives" value="true" />
+    </inspection_tool>
+    <inspection_tool class="JSUnusedGlobalSymbols" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
+    <inspection_tool class="SpellCheckingInspection" enabled="false" level="TYPO" enabled_by_default="false">
+      <option name="processCode" value="true" />
+      <option name="processLiterals" value="true" />
+      <option name="processComments" value="true" />
+    </inspection_tool>
+    <inspection_tool class="TaskInspection" enabled="true" level="INFO" enabled_by_default="true">
+      <option name="suppressedTasks">
+        <set>
+          <option value="LESS" />
+        </set>
+      </option>
+    </inspection_tool>
+  </profile>
+</component>
