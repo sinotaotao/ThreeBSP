@@ -1,4 +1,4 @@
-///<reference path="three.d.ts"/>
+///<reference path="three.d.ts" />
 
 
 // Constants...
@@ -75,31 +75,6 @@ class ThreeBSP
 				vertex = new ThreeBSP.Vertex(vertex.x, vertex.y, vertex.z, face.vertexNormals[2], uvs);
 				vertex.applyMatrix4(matrix);
 				polygon.vertices.push(vertex);
-			} else if(typeof THREE.Face3)
-			{
-				vertex = geometry.vertices[ face.a ];
-				uvs = faceVertexUvs ? new THREE.Vector2(faceVertexUvs[0].x, faceVertexUvs[0].y) : null;
-				vertex = new ThreeBSP.Vertex(vertex.x, vertex.y, vertex.z, face.vertexNormals[0], uvs);
-				vertex.applyMatrix4(matrix);
-				polygon.vertices.push(vertex);
-
-				vertex = geometry.vertices[ face.b ];
-				uvs = faceVertexUvs ? new THREE.Vector2(faceVertexUvs[1].x, faceVertexUvs[1].y) : null;
-				vertex = new ThreeBSP.Vertex(vertex.x, vertex.y, vertex.z, face.vertexNormals[1], uvs);
-				vertex.applyMatrix4(this.matrix);
-				polygon.vertices.push(vertex);
-
-				vertex = geometry.vertices[ face.c ];
-				uvs = faceVertexUvs ? new THREE.Vector2(faceVertexUvs[2].x, faceVertexUvs[2].y) : null;
-				vertex = new ThreeBSP.Vertex(vertex.x, vertex.y, vertex.z, face.vertexNormals[2], uvs);
-				vertex.applyMatrix4(matrix);
-				polygon.vertices.push(vertex);
-
-				vertex = geometry.vertices[ face.d ];
-				uvs = faceVertexUvs ? new THREE.Vector2(faceVertexUvs[3].x, faceVertexUvs[3].y) : null;
-				vertex = new ThreeBSP.Vertex(vertex.x, vertex.y, vertex.z, face.vertexNormals[3], uvs);
-				vertex.applyMatrix4(matrix);
-				polygon.vertices.push(vertex);
 			} else
 			{
 				throw 'Invalid face type at index ' + i;
@@ -122,7 +97,6 @@ class ThreeBSP
 		a.clipTo(b);
 		b.clipTo(a);
 		b.invert();
-		b.clipTo(a);
 		b.clipTo(a);
 		b.invert();
 		a.build(b.allPolygons());
@@ -254,18 +228,16 @@ module ThreeBSP {
 
 	export class Polygon
 	{
+
+		public normal: THREE.Vector3;
+		public w: number;
+
 		constructor(
-			public vertices:Vertex[] = [],
-			public normal?:THREE.Vector3,
-			public w?:number)
+			public vertices:Vertex[] = [])
 		{
 			if(vertices.length>0)
 			{
 				this.calculateProperties();
-			} else
-			{
-				this.normal = null;
-				this.w = NaN;
 			}
 		}
 
@@ -451,8 +423,8 @@ module ThreeBSP {
 	export class Node
 	{
 
-		front:Node;
-		back:Node;
+		front:Node = undefined;
+		back:Node = undefined;
 		divider:Polygon;
 
 		constructor(public polygons:Polygon[] = [])
@@ -568,22 +540,24 @@ module ThreeBSP {
 			return this;
 		}
 
-		clipPolygons(polygons):Polygon[]
+		clipPolygons(polygons:Polygon[]):Polygon[]
 		{
 
+			if (!this.divider)
+				return polygons.slice();
 
-			if(!this.divider) return polygons.slice();
-
-			var front:Polygon[] = [], back:Polygon[] = [];
+			var front: Polygon[] = [],
+				back: Polygon[] = [];
 
 			for(var i = 0, polygon_count = polygons.length; i<polygon_count; i++)
 			{
 				this.divider.splitPolygon(polygons[i], front, back, front, back);
 			}
 
-			if(this.front) front = this.front.clipPolygons(front);
-			if(this.back) back = this.back.clipPolygons(back);
-			else back = [];
+			if (this.front)
+				front = this.front.clipPolygons(front);
+
+			back = this.back ? this.back.clipPolygons(back) : [];
 
 			return front.concat(back);
 		}

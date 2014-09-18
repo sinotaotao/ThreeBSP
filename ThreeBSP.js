@@ -1,4 +1,4 @@
-///<reference path="three.d.ts"/>
+///<reference path="three.d.ts" />
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -54,30 +54,6 @@ define(["require", "exports"], function(require, exports) {
                     vertex = new ThreeBSP.Vertex(vertex.x, vertex.y, vertex.z, face.vertexNormals[2], uvs);
                     vertex.applyMatrix4(matrix);
                     polygon.vertices.push(vertex);
-                } else if (typeof THREE.Face3) {
-                    vertex = geometry.vertices[face.a];
-                    uvs = faceVertexUvs ? new THREE.Vector2(faceVertexUvs[0].x, faceVertexUvs[0].y) : null;
-                    vertex = new ThreeBSP.Vertex(vertex.x, vertex.y, vertex.z, face.vertexNormals[0], uvs);
-                    vertex.applyMatrix4(matrix);
-                    polygon.vertices.push(vertex);
-
-                    vertex = geometry.vertices[face.b];
-                    uvs = faceVertexUvs ? new THREE.Vector2(faceVertexUvs[1].x, faceVertexUvs[1].y) : null;
-                    vertex = new ThreeBSP.Vertex(vertex.x, vertex.y, vertex.z, face.vertexNormals[1], uvs);
-                    vertex.applyMatrix4(this.matrix);
-                    polygon.vertices.push(vertex);
-
-                    vertex = geometry.vertices[face.c];
-                    uvs = faceVertexUvs ? new THREE.Vector2(faceVertexUvs[2].x, faceVertexUvs[2].y) : null;
-                    vertex = new ThreeBSP.Vertex(vertex.x, vertex.y, vertex.z, face.vertexNormals[2], uvs);
-                    vertex.applyMatrix4(matrix);
-                    polygon.vertices.push(vertex);
-
-                    vertex = geometry.vertices[face.d];
-                    uvs = faceVertexUvs ? new THREE.Vector2(faceVertexUvs[3].x, faceVertexUvs[3].y) : null;
-                    vertex = new ThreeBSP.Vertex(vertex.x, vertex.y, vertex.z, face.vertexNormals[3], uvs);
-                    vertex.applyMatrix4(matrix);
-                    polygon.vertices.push(vertex);
                 } else {
                     throw 'Invalid face type at index ' + i;
                 }
@@ -95,7 +71,6 @@ define(["require", "exports"], function(require, exports) {
             a.clipTo(b);
             b.clipTo(a);
             b.invert();
-            b.clipTo(a);
             b.clipTo(a);
             b.invert();
             a.build(b.allPolygons());
@@ -195,16 +170,11 @@ define(["require", "exports"], function(require, exports) {
     var ThreeBSP;
     (function (ThreeBSP) {
         var Polygon = (function () {
-            function Polygon(vertices, normal, w) {
+            function Polygon(vertices) {
                 if (typeof vertices === "undefined") { vertices = []; }
                 this.vertices = vertices;
-                this.normal = normal;
-                this.w = w;
                 if (vertices.length > 0) {
                     this.calculateProperties();
-                } else {
-                    this.normal = null;
-                    this.w = NaN;
                 }
             }
             Polygon.prototype.calculateProperties = function () {
@@ -341,6 +311,8 @@ define(["require", "exports"], function(require, exports) {
             function Node(polygons) {
                 if (typeof polygons === "undefined") { polygons = []; }
                 this.polygons = polygons;
+                this.front = undefined;
+                this.back = undefined;
                 if (polygons.length) {
                     var front = [], back = [];
 
@@ -457,10 +429,8 @@ define(["require", "exports"], function(require, exports) {
 
                 if (this.front)
                     front = this.front.clipPolygons(front);
-                if (this.back)
-                    back = this.back.clipPolygons(back);
-                else
-                    back = [];
+
+                back = this.back ? this.back.clipPolygons(back) : [];
 
                 return front.concat(back);
             };
