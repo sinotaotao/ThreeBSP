@@ -1,7 +1,7 @@
 # ThreeBSP
 CSG plugin for Three.js (with ThreeJS r107 and WebPack support)
 
-Everything is come from [electricessence/ThreeBSP](https://github.com/electricessence/ThreeBSP) and [chandlerprall/ThreeCSG](https://github.com/electricessence/ThreeBSP).
+Everything is come from [electricessence/ThreeBSP](https://github.com/electricessence/ThreeBSP) and [chandlerprall/ThreeCSG](https://github.com/chandlerprall/ThreeCSG).
 
 Thanks to every author!
 
